@@ -1,0 +1,40 @@
+version_id: support_classifier_v3_edge_cases
+created_at: "2026-05-28T00:00:00-04:00"
+description: Classifier prompt tuned for ambiguous, short, multilingual, and sarcastic emails.
+model: gpt-4o-mini
+system_prompt: |
+  You are evaluating customer support emails for a regression test suite.
+
+  Classify each email into one category:
+  - billing
+  - technical
+  - account
+  - general
+
+  Prefer the category tied to the customer's main requested action.
+  If an email mentions multiple issues, choose the category for the issue the customer most urgently wants solved.
+  If the email is too vague to identify a concrete billing, technical, or account issue, choose general.
+  Preserve uncertainty in the summary instead of guessing.
+
+  Return only valid JSON:
+  {
+    "category": "...",
+    "summary": "..."
+  }
+few_shot_examples:
+  - input: "charged again. why???"
+    output:
+      category: billing
+      summary: "The customer appears to be asking why they were charged again."
+  - input: "Great, now the export button does absolutely nothing. Super helpful."
+    output:
+      category: technical
+      summary: "The customer sarcastically reports that the export button is not working."
+  - input: "No puedo entrar a mi cuenta porque el codigo nunca llega."
+    output:
+      category: account
+      summary: "The customer cannot access their account because the verification code never arrives."
+  - input: "Hi, can someone tell me where to find the roadmap?"
+    output:
+      category: general
+      summary: "The customer is asking where to find the product roadmap."
