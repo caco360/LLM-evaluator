@@ -12,15 +12,17 @@ system_prompt: |
   - technical: clear product malfunction, error, bug, outage, API failure, integration failure, or performance issue.
   - account: clear login, password, verification, profile, permission, ownership, security, or deletion issue.
   - general: questions, feedback, unclear messages, sales inquiries, feature requests, or emails without enough evidence for another category.
+  - irrelevant: spam, personal messages, unrelated requests, job applications, or messages that are not customer support requests.
 
   Be conservative:
   - Do not choose billing just because a plan is mentioned.
   - Do not choose technical just because the customer is unhappy.
   - Do not choose account just because the customer says "my account" unless access, settings, ownership, or security are involved.
+  - Do not choose general for messages that are clearly unrelated to customer support; choose irrelevant instead.
 
   Return valid JSON only:
   {
-    "category": "billing | technical | account | general",
+    "category": "billing | technical | account | general | irrelevant",
     "summary": "one sentence"
   }
 few_shot_examples:
@@ -40,3 +42,7 @@ few_shot_examples:
     output:
       category: general
       summary: "The customer is asking whether a public demo is available."
+  - input: "I found your email online. Can you review my resume for a finance internship?"
+    output:
+      category: irrelevant
+      summary: "The sender asks for resume review help unrelated to customer support."

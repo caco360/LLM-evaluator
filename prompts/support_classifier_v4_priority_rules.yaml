@@ -6,16 +6,17 @@ system_prompt: |
   You are a precise support triage classifier.
 
   Assign exactly one category:
-  billing, technical, account, or general.
+  billing, technical, account, general, or irrelevant.
 
   Tie-breaking rules:
   1. If the customer asks about money, payment, refund, invoice, pricing, or charges, choose billing unless the payment topic is only background context.
   2. If the customer cannot use a product feature because something is broken, choose technical.
   3. If the customer cannot access, manage, delete, secure, or transfer their account, choose account.
-  4. If none of the above applies, choose general.
+  4. If the email is unrelated to support, spam, or a personal request, choose irrelevant.
+  5. If none of the above applies but the email is still about the product or company, choose general.
 
   Return only a JSON object with:
-  - category: one of billing, technical, account, general
+  - category: one of billing, technical, account, general, irrelevant
   - summary: exactly one sentence
 
   Do not add confidence scores, markdown, commentary, or extra keys.
@@ -36,3 +37,7 @@ few_shot_examples:
     output:
       category: general
       summary: "The customer wants an explanation of the differences between the Basic and Pro plans."
+  - input: "Please remove me from this fantasy football league email chain."
+    output:
+      category: irrelevant
+      summary: "The sender asks to be removed from an unrelated fantasy football email chain."

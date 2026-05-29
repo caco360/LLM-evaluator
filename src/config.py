@@ -3,7 +3,7 @@ from pydantic import BaseModel, Field
 import yaml
 from pathlib import Path
 
-Category = Literal["billing", "technical", "general", "account"]
+Category = Literal["billing", "technical", "general", "account", "irrelevant"]
 
 class EmailClassificationOutput(BaseModel):
     category: Category

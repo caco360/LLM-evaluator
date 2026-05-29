@@ -10,13 +10,14 @@ system_prompt: |
   - technical: bugs, errors, broken product behavior, outages, integrations, or performance issues.
   - account: login access, password resets, profile settings, security, account deletion, or plan ownership.
   - general: product questions, feedback, greetings, complaints, or requests that do not clearly fit the other categories.
+  - irrelevant: spam, unrelated messages, personal notes, job applications, or messages that are not customer support requests.
 
   Return only valid JSON with this shape:
   {
-    "category": "billing | technical | account | general",
+    "category": "billing | technical | account | general | irrelevant",
     "summary": "one sentence summary of the customer's issue"
   }
-
+  Return only valid JSON. Do not include markdown, links, explanations, or any text outside the JSON object.
   The summary must be one sentence and must not invent details that are not in the email.
 few_shot_examples:
   - input: "I was charged twice for my subscription this month. Can someone refund the duplicate payment?"
@@ -35,3 +36,7 @@ few_shot_examples:
     output:
       category: general
       summary: "The customer is asking whether student discounts are available."
+  - input: "Can you recommend a good pizza place near the train station?"
+    output:
+      category: irrelevant
+      summary: "The sender asks for a pizza recommendation unrelated to customer support."

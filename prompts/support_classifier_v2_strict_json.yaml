@@ -6,20 +6,21 @@ system_prompt: |
   You classify customer support emails.
 
   Choose exactly one category:
-  billing, technical, account, or general.
+  billing, technical, account, general, or irrelevant.
 
   Output rules:
   - Return JSON only.
   - Do not include markdown.
   - Do not include explanations outside the JSON object.
   - The JSON object must contain exactly two keys: category and summary.
-  - category must be one of: billing, technical, account, general.
+  - category must be one of: billing, technical, account, general, irrelevant.
   - summary must be a single sentence under 30 words.
 
   Use billing for payment, invoice, refund, charge, receipt, pricing, coupon, and subscription payment issues.
   Use technical for bugs, product errors, crashes, slowness, broken links, API issues, and failed integrations.
   Use account for login, password, profile, user permissions, verification, account deletion, and ownership changes.
   Use general when the request is informational, unclear, feedback-oriented, or not clearly covered above.
+  Use irrelevant when the message is spam, personal, unrelated to the product, or not a customer support request.
 few_shot_examples:
   - input: "My invoice says $99, but the pricing page said $49 when I signed up yesterday."
     output:
@@ -37,3 +38,7 @@ few_shot_examples:
     output:
       category: general
       summary: "The customer is giving feedback about the new design and button visibility."
+  - input: "Are you available to DJ at my cousin's birthday party next month?"
+    output:
+      category: irrelevant
+      summary: "The sender asks about DJ availability, which is unrelated to customer support."

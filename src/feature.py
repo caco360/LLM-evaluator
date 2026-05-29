@@ -1,14 +1,17 @@
-from openai import OpenAI
+from openai import AsyncOpenAI
 import os
 from dotenv import load_dotenv
 load_dotenv()
-from config import EmailClassificationOutput, PromptConfig, load_prompt
+from config import EmailClassificationOutput, PromptConfig
 
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-if not OPENAI_API_KEY:
-    raise RuntimeError("OPENAI_API_KEY is not set")
-client = OpenAI(api_key=OPENAI_API_KEY)
+
+
+def get_client() -> AsyncOpenAI:
+    if not OPENAI_API_KEY:
+        raise RuntimeError("OPENAI_API_KEY is not set")
+    return AsyncOpenAI(api_key=OPENAI_API_KEY)
 
 
 
@@ -30,9 +33,9 @@ def build_input(prompt:PromptConfig,user_email)->str:
     return "\n\n".join(sections)
 
 
-def email_classifier(prompt_path:str, user_email:str)->EmailClassificationOutput:
-    prompt = load_prompt(prompt_path)
-    response = client.responses.create(
+async def email_classifier(prompt: PromptConfig, user_email:str)->EmailClassificationOutput:
+    client = get_client()
+    response = await client.responses.create(
         model = prompt.model,
         input = build_input(prompt,user_email)
     )

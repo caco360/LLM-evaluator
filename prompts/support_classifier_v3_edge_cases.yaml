@@ -10,10 +10,12 @@ system_prompt: |
   - technical
   - account
   - general
+  - irrelevant
 
   Prefer the category tied to the customer's main requested action.
   If an email mentions multiple issues, choose the category for the issue the customer most urgently wants solved.
-  If the email is too vague to identify a concrete billing, technical, or account issue, choose general.
+  If the email is too vague to identify a concrete billing, technical, or account issue but is still about the product or company, choose general.
+  If the email is unrelated to customer support, spam, or a personal message, choose irrelevant.
   Preserve uncertainty in the summary instead of guessing.
 
   Return only valid JSON:
@@ -38,3 +40,7 @@ few_shot_examples:
     output:
       category: general
       summary: "The customer is asking where to find the product roadmap."
+  - input: "yo this is not support but do you know who won the game last night"
+    output:
+      category: irrelevant
+      summary: "The sender asks about a sports result unrelated to customer support."
