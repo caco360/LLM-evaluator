@@ -71,53 +71,53 @@
     },
     {
         "id":8,
-        "input":"",
+        "input":"How can i change the payment method? my credit card expired. Thank you",
         "expected_output":{
             "category":"billing",
-            "summary":""
+            "summary":"User is asking on how to change his payment method"
         },
-        "difficulty":"",
-        "note":""
+        "difficulty":"easy",
+        "note":"Very clear and obvious that he is reffering to billing."
     },
     {
         "id":9,
-        "input":"",
+        "input":"why am i charged so mucgh. I need a cheaper alternative",
         "expected_output":{
             "category":"billing",
-            "summary":""
+            "summary":"User is complaining about the pricing and is asking about alternatives"
         },
-        "difficulty":"",
-        "note":""
+        "difficulty":"medium",
+        "note":"Some typos but overall clear category."
     },
     {
         "id":10,
-        "input":"",
+        "input":"Is there automatic payment and how can i activate it.",
         "expected_output":{
             "category":"billing",
-            "summary":""
+            "summary":"User is asking if automatic payment is provided and how can he activate it if it's the case."
         },
-        "difficulty":"",
-        "note":""
+        "difficulty":"medium",
+        "note":"Message is clear, can be confused with technical ot general since its about a feature."
     },
     {
         "id":11,
-        "input":"",
+        "input":"SO Friggin eXpensive",
         "expected_output":{
             "category":"billing",
-            "summary":""
+            "summary":"User is complaining about high prices."
         },
-        "difficulty":"",
-        "note":""
+        "difficulty":"edge",
+        "note":"Visible typos and capital characters show anger from the user. Might be hard to determine since its a short message."
     },
     {
         "id":12,
-        "input":"",
+        "input":"How can i create a new account?",
         "expected_output":{
             "category":"account",
-            "summary":""
+            "summary":"User wants to know how he can create a new account"
         },
-        "difficulty":"",
-        "note":""
+        "difficulty":"easy",
+        "note":"Very easy to distinguish since account is mentioned in the input."
     },
     {
         "id":13,

@@ -39,4 +39,13 @@ async def email_classifier(prompt: PromptConfig, user_email:str)->EmailClassific
         model = prompt.model,
         input = build_input(prompt,user_email)
     )
-    return EmailClassificationOutput.model_validate_json(response.output_text)
+    usage = response.usage
+    parsed_out =  EmailClassificationOutput.model_validate_json(response.output_text)
+    return {
+        "parsed_out": parsed_out,
+        "usage":{
+            "input_tokens": usage.input_tokens,
+            "output_tokens": usage.output_tokens,
+            "total_tokens": usage.total_tokens,
+        }
+    }

@@ -2,6 +2,7 @@ from feature import email_classifier
 from config import load_prompt
 import json 
 import asyncio
+import time
 
 
 def load_golden_dataset(golden_ds_path:str)->list[dict]:
@@ -16,11 +17,14 @@ async def run_one_case(test_case: dict, prompt, semaphore: asyncio.Semaphore) ->
         "expected_output": test_case["expected_output"],
     }
 
+    start_time = time.perf_counter()
     try:
         async with semaphore:
             model_out = await email_classifier(prompt, test_case["input"])
-
-        result["model_output"] = model_out.model_dump()
+        latency_ms = round((time.perf_counter() - start_time) * 1000,2)
+        result["model_output"] = model_out["parsed_out"].model_dump()
+        result["usage"]=model_out["usage"]
+        result["latency_ms"]= latency_ms
         result["status"] = "success"
     except Exception as error:
         result["model_output"] = None
