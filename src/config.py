@@ -21,6 +21,9 @@ class PromptConfig(BaseModel):
     system_prompt: str
     few_shot_examples: list[FewShotExample] = Field(default_factory=list)
 
+class SummaryScore(BaseModel):
+    score : int
+
 
 
 
