@@ -14,7 +14,7 @@ def get_client() -> AsyncOpenAI:
     return AsyncOpenAI(api_key=OPENAI_API_KEY)
 
 
-
+#builds the input string from the prompt config, including system prompt and few shot examples, and the user email
 def build_input(prompt:PromptConfig,user_email)->str:
     few_shot_text = "\n\n".join(
         [
@@ -32,7 +32,7 @@ def build_input(prompt:PromptConfig,user_email)->str:
 
     return "\n\n".join(sections)
 
-
+#calls model to classify email and returns the parsed output and token usage
 async def email_classifier(prompt: PromptConfig, user_email:str)->dict:
     client = get_client()
     response = await client.responses.create(
@@ -50,6 +50,7 @@ async def email_classifier(prompt: PromptConfig, user_email:str)->dict:
         }
     }
 
+#calls model to score the summary of the model output against the expected summary and returns the score as an integer from 1 to 5, along with the token usage
 async def score_summary (email_text : str, expected_summary: str, actual_summary: str)->SummaryScore:
     client = get_client()
     response = await client.responses.create(

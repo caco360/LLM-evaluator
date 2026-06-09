@@ -27,7 +27,7 @@ class SummaryScore(BaseModel):
 
 
 
-
+#Convert the yaml prompt file to PromptConfig object
 def load_prompt(prompt_path: str | Path) -> PromptConfig:
     path = Path(prompt_path)
     with path.open("r", encoding="utf-8") as file:
