@@ -94,25 +94,31 @@ def check_latest_accuracy_drop(
     previous_accuracy = {"overall_category_accuracy": baseline["overall_category_accuracy"], "overall_summary_score": baseline["overall_summary_score"], "total_tokens": baseline["total_tokens"], "avg_latency_ms": baseline["avg_latency_ms"]}
     latest_accuracy = {"overall_category_accuracy": latest["overall_category_accuracy"], "overall_summary_score": latest["overall_summary_score"], "total_tokens": latest["total_tokens"], "avg_latency_ms": latest["avg_latency_ms"]}
 
-    drop = {key: previous_accuracy[key] - latest_accuracy[key] for key in previous_accuracy}
+    drop = {}
+    for key in previous_accuracy:
+        if previous_accuracy[key] is None or latest_accuracy[key] is None:
+            print(f"Skipping {key} comparison because one of the values is missing")
+            drop[key] = None
+        else:
+            drop[key] = previous_accuracy[key] - latest_accuracy[key]
     alerts = []
 
-    if drop["overall_category_accuracy"] >= category_threshold:
+    if drop["overall_category_accuracy"] is not None and drop["overall_category_accuracy"] >= category_threshold:
         alerts.append(f"Category accuracy dropped by {drop['overall_category_accuracy']:.2%}")
     else:
         print("Category accuracy drop is within threshold")
 
-    if drop["overall_summary_score"] >= summary_threshold:
+    if drop["overall_summary_score"] is not None and drop["overall_summary_score"] >= summary_threshold:
         alerts.append(f"Summary score dropped by {drop['overall_summary_score']:.2f}")
     else:
         print("Summary score drop is within threshold")
 
-    if (-drop["total_tokens"]) >= tokens_threshold:
+    if drop["total_tokens"] is not None and (-drop["total_tokens"]) >= tokens_threshold:
         alerts.append(f"Total token usage increased by {-drop['total_tokens']}")
     else:
         print("Total tokens increase is within threshold")
 
-    if (-drop["avg_latency_ms"]) >= latency_threshold:
+    if drop["avg_latency_ms"] is not None and (-drop["avg_latency_ms"]) >= latency_threshold:
         alerts.append(f"Average latency increased by {-drop['avg_latency_ms']:.2f} ms")
     else:
         print("Average latency increase is within threshold")

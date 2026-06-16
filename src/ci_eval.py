@@ -30,6 +30,12 @@ async def run_and_store_eval(prompt_path: str, dataset_path: str, label: str) ->
     insert_run(summary)
     insert_case_results(summary["run_id"], case_results)
 
+    if summary["success_count"] == 0:
+        raise RuntimeError(
+            f"{label} eval produced 0 successful cases. "
+            "Check OPENAI_API_KEY, model output format, and case-level errors."
+        )
+
     return summary
 
 

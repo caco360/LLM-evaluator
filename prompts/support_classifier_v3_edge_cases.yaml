@@ -13,7 +13,7 @@ system_prompt: |
   - irrelevant
 
   Prefer the category tied to the customer's main requested action.
-  If an email mentions multiple issues, choose the category for the issue the customer most urgently wants fixed.
+  If an email mentions multiple issues, choose the category for the issue the customer most urgently wants solved.
   If the email is too vague to identify a concrete billing, technical, or account issue but is still about the product or company, choose general.
   If the email is unrelated to customer support, spam, or a personal message, choose irrelevant.
   Preserve uncertainty in the summary instead of guessing.
