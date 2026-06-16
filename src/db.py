@@ -112,7 +112,7 @@ def insert_case_results(run_id: str, case_results: list[dict]) -> None:
 
 def get_last_two_runs() -> list[dict]:
     res = con.execute("""
-    SELECT run_id, created_at, overall_category_accuracy
+    SELECT run_id, created_at, overall_category_accuracy, overall_summary_score, total_tokens, avg_latency_ms
     FROM eval_runs
     ORDER BY created_at DESC
     LIMIT 2
@@ -122,6 +122,9 @@ def get_last_two_runs() -> list[dict]:
             "run_id": row[0],
             "created_at": row[1],
             "overall_category_accuracy": row[2],
+            "overall_summary_score": row[3],
+            "total_tokens": row[4],
+            "avg_latency_ms": row[5],
         }
         for row in res.fetchall()
     ]

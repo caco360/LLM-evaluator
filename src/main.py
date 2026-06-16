@@ -7,8 +7,13 @@ from uuid import uuid4
 from config import load_prompt
 from db import initDB, insert_case_results, insert_run
 from eval import evaluate_prompt, run_summary, check_latest_accuracy_drop
+from runs.report import generate_latest_run_report
+from slackhook import send_slack_notification
 
-WARNING_THRESHOLD = 0.03
+CATEGORY_THRESHOLD = 0.03
+SUMMARY_THRESHOLD = 0.03
+TOKENS_THRESHOLD = 0.03
+LATENCY_THRESHOLD = 0.03
 
 
 def build_run_id(prompt_version: str) -> str:
@@ -21,7 +26,7 @@ async def main() -> None:
     parser = argparse.ArgumentParser(description="Run an LLM regression evaluation.")
     parser.add_argument(
         "--prompt",
-        default="prompts/support_classifier_v5_conservative.yaml",
+        default="prompts/support_classifier_v3_edge_cases.yaml",
         help="Path to the prompt YAML file.",
     )
     parser.add_argument(
@@ -40,7 +45,13 @@ async def main() -> None:
 
     insert_run(summary)
     insert_case_results(summary["run_id"], case_results)
-    check_latest_accuracy_drop(WARNING_THRESHOLD)
+    regression_alerts = check_latest_accuracy_drop(CATEGORY_THRESHOLD, SUMMARY_THRESHOLD, TOKENS_THRESHOLD, LATENCY_THRESHOLD)
+    if regression_alerts:
+        report_path = generate_latest_run_report()
+        message = "Regression detected:\n"
+        message += "\n".join(f"- {alert}" for alert in regression_alerts)
+        message += f"\nReport: {report_path}"
+        send_slack_notification(message)
 
 
     print(json.dumps(summary, indent=2))

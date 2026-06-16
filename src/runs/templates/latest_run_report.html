@@ -1,0 +1,319 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Latest Eval Run Report</title>
+  <style>
+    body {
+      margin: 40px;
+      color: #1f2937;
+      background: #f8fafc;
+      font-family: Arial, sans-serif;
+    }
+
+    main {
+      max-width: 960px;
+      margin: 0 auto;
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 32px;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: 28px;
+    }
+
+    .subtitle {
+      margin: 0 0 28px;
+      color: #64748b;
+    }
+
+    .scoregrid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+
+    .metric {
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 16px;
+      background: #f9fafb;
+    }
+
+    .label {
+      color: #64748b;
+      font-size: 13px;
+      margin-bottom: 8px;
+    }
+
+    .value {
+      font-size: 24px;
+      font-weight: 700;
+    }
+
+    section {
+      margin-top: 32px;
+    }
+
+    .delta-up {
+      color: #047857;
+      font-weight: 700;
+    }
+
+    .delta-down {
+      color: #b91c1c;
+      font-weight: 700;
+    }
+
+    .muted {
+      color: #64748b;
+    }
+
+    .empty-state {
+      padding: 16px;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      background: #f8fafc;
+      color: #64748b;
+    }
+
+    .wide th {
+      width: auto;
+    }
+
+    .bar {
+      height: 10px;
+      border-radius: 999px;
+      background: #e5e7eb;
+      overflow: hidden;
+      min-width: 120px;
+    }
+
+    .bar-fill {
+      height: 100%;
+      background: #2563eb;
+    }
+
+    .bar-fill.summary {
+      background: #7c3aed;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th, td {
+      padding: 12px;
+      border-bottom: 1px solid #e5e7eb;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      width: 220px;
+      color: #475569;
+      background: #f8fafc;
+    }
+
+    @media (max-width: 760px) {
+      body {
+        margin: 16px;
+      }
+
+      main {
+        padding: 20px;
+      }
+
+      .scoregrid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Latest Eval Run Report</h1>
+    <p class="subtitle">Metadata and high-level scores for the most recent model regression run.</p>
+
+    <section class="scoregrid">
+      <div class="metric">
+        <div class="label">Category Accuracy</div>
+        <div class="value">{{ run.overall_category_accuracy | percent }}</div>
+      </div>
+      <div class="metric">
+        <div class="label">Summary Score</div>
+        <div class="value">{{ "%.2f"|format(run.overall_summary_score) if run.overall_summary_score is not none else "N/A" }}</div>
+      </div>
+      <div class="metric">
+        <div class="label">Total Tokens</div>
+        <div class="value">{{ run.total_tokens }}</div>
+      </div>
+      <div class="metric">
+        <div class="label">Avg Latency</div>
+        <div class="value">{{ "%.2f ms"|format(run.avg_latency_ms) if run.avg_latency_ms is not none else "N/A" }}</div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Baseline Comparison</h2>
+      {% if previous_run %}
+      <p class="muted">Baseline: {{ previous_run.run_id }}</p>
+      <table class="wide">
+        <thead>
+          <tr>
+            <th>Metric</th>
+            <th>Baseline</th>
+            <th>Latest</th>
+            <th>Delta</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for metric in scorecard %}
+          <tr>
+            <td>{{ metric.label }}</td>
+            <td>
+              {% if metric.is_percent %}
+                {{ metric.previous | percent }}
+              {% else %}
+                {{ "%.2f"|format(metric.previous) if metric.previous is not none else "N/A" }}
+              {% endif %}
+            </td>
+            <td>
+              {% if metric.is_percent %}
+                {{ metric.latest | percent }}
+              {% else %}
+                {{ "%.2f"|format(metric.latest) if metric.latest is not none else "N/A" }}
+              {% endif %}
+            </td>
+            <td class="{{ 'delta-up' if metric.is_good_delta else 'delta-down' if metric.is_good_delta is not none and not metric.is_good_delta else '' }}">
+              {{ metric.delta | delta(metric.is_percent) }}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <div class="empty-state">No previous run is available yet.</div>
+      {% endif %}
+    </section>
+
+    <section>
+      <h2>Regressed Cases</h2>
+      {% if regressions %}
+      <table class="wide">
+        <thead>
+          <tr>
+            <th>Case ID</th>
+            <th>Expected</th>
+            <th>Previous Output</th>
+            <th>Latest Output</th>
+            <th>Input</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for case in regressions %}
+          <tr>
+            <td>{{ case.case_id }}</td>
+            <td>{{ case.expected_category }}</td>
+            <td>
+              <strong>{{ case.previous_output.category }}</strong><br>
+              <span class="muted">{{ case.previous_output.summary }}</span>
+            </td>
+            <td>
+              <strong>{{ case.latest_output.category }}</strong><br>
+              <span class="muted">{{ case.latest_output.summary }}</span>
+            </td>
+            <td>{{ case.input }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <div class="empty-state">No category regressions were found.</div>
+      {% endif %}
+    </section>
+
+    <section>
+      <h2>Trend Over Last {{ trend_runs | length }} Runs</h2>
+      <table class="wide">
+        <thead>
+          <tr>
+            <th>Created At</th>
+            <th>Prompt</th>
+            <th>Accuracy</th>
+            <th>Summary Score</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for trend_run in trend_runs %}
+          <tr>
+            <td>{{ trend_run.created_at }}</td>
+            <td>{{ trend_run.prompt_version }}</td>
+            <td>
+              {{ trend_run.overall_category_accuracy | percent }}
+              <div class="bar">
+                <div class="bar-fill" style="width: {{ (trend_run.overall_category_accuracy or 0) * 100 }}%;"></div>
+              </div>
+            </td>
+            <td>
+              {{ "%.2f"|format(trend_run.overall_summary_score) if trend_run.overall_summary_score is not none else "N/A" }}
+              <div class="bar">
+                <div class="bar-fill summary" style="width: {{ ((trend_run.overall_summary_score or 0) / 5) * 100 }}%;"></div>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>Run Metadata</h2>
+      <table>
+        <tr>
+          <th>Run ID</th>
+          <td>{{ run.run_id }}</td>
+        </tr>
+        <tr>
+          <th>Created At</th>
+          <td>{{ run.created_at }}</td>
+        </tr>
+        <tr>
+          <th>Prompt Version</th>
+          <td>{{ run.prompt_version }}</td>
+        </tr>
+        <tr>
+          <th>Prompt File</th>
+          <td>{{ run.prompt_file }}</td>
+        </tr>
+        <tr>
+          <th>Model</th>
+          <td>{{ run.model }}</td>
+        </tr>
+        <tr>
+          <th>Dataset File</th>
+          <td>{{ run.dataset_file }}</td>
+        </tr>
+        <tr>
+          <th>Total Cases</th>
+          <td>{{ run.total_cases }}</td>
+        </tr>
+        <tr>
+          <th>Successful Cases</th>
+          <td>{{ run.success_count }}</td>
+        </tr>
+        <tr>
+          <th>Error Cases</th>
+          <td>{{ run.error_count }}</td>
+        </tr>
+      </table>
+    </section>
+  </main>
+</body>
+</html>

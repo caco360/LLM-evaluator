@@ -69,24 +69,40 @@ def run_summary(run_result: list[dict], prompt_path: str, golden_ds_path: str, p
     return summary
 
 #compares last two run difference in accuracy in reference to threshold
-def check_latest_accuracy_drop(threshold: float) -> None:
+def check_latest_accuracy_drop(category_threshold: float, summary_threshold: float, tokens_threshold: float, latency_threshold: float) -> list[str]:
     runs = get_last_two_runs()
 
     if len(runs) < 2:
         print("Not enough runs to compare")
-        return
+        return []
 
     latest = runs[0]
     previous = runs[1]
 
-    previous_accuracy = previous["overall_category_accuracy"]
-    latest_accuracy = latest["overall_category_accuracy"]
+    previous_accuracy = {"overall_category_accuracy": previous["overall_category_accuracy"], "overall_summary_score": previous["overall_summary_score"], "total_tokens": previous["total_tokens"], "avg_latency_ms": previous["avg_latency_ms"]}
+    latest_accuracy = {"overall_category_accuracy": latest["overall_category_accuracy"], "overall_summary_score": latest["overall_summary_score"], "total_tokens": latest["total_tokens"], "avg_latency_ms": latest["avg_latency_ms"]}
 
-    drop = previous_accuracy - latest_accuracy
+    drop = {key: previous_accuracy[key] - latest_accuracy[key] for key in previous_accuracy}
+    alerts = []
 
-    if drop >= threshold:
-        print("Accuracy dropped more than threshold")
+    if drop["overall_category_accuracy"] >= category_threshold:
+        alerts.append(f"Category accuracy dropped by {drop['overall_category_accuracy']:.2%}")
     else:
-        print("Accuracy drop is within threshold")
+        print("Category accuracy drop is within threshold")
 
+    if drop["overall_summary_score"] >= summary_threshold:
+        alerts.append(f"Summary score dropped by {drop['overall_summary_score']:.2f}")
+    else:
+        print("Summary score drop is within threshold")
 
+    if (-drop["total_tokens"]) >= tokens_threshold:
+        alerts.append(f"Total token usage increased by {-drop['total_tokens']}")
+    else:
+        print("Total tokens increase is within threshold")
+
+    if (-drop["avg_latency_ms"]) >= latency_threshold:
+        alerts.append(f"Average latency increased by {-drop['avg_latency_ms']:.2f} ms")
+    else:
+        print("Average latency increase is within threshold")
+
+    return alerts

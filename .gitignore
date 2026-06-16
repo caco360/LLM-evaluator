@@ -1,2 +1,4 @@
 .env
 __pycache__/
+/src/runs/eval.db
+src/runs/reports/latest_run_report.html
