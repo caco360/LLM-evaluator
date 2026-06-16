@@ -24,7 +24,7 @@ system_prompt: |
     "summary": "..."
   }
 few_shot_examples:
-  - input: "charged again. why???"
+  - input: "charged again. why????"
     output:
       category: billing
       summary: "The customer appears to be asking why they were charged again."
