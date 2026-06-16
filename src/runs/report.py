@@ -3,6 +3,8 @@ import sqlite3
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
+from db import get_latest_run_for_prompt_version
+
 
 BASE_DIR = Path(__file__).parent
 DB_PATH = BASE_DIR / "eval.db"
@@ -170,9 +172,10 @@ def find_category_regressions(previous_run: dict | None, latest_run: dict) -> li
 
 
 def generate_latest_run_report() -> Path:
-    latest_run, previous_run = get_latest_two_runs()
-    scorecard = build_scorecard(latest_run, previous_run)
-    regressions = find_category_regressions(previous_run, latest_run)
+    latest_run = get_latest_run()
+    baseline_run = get_latest_run_for_prompt_version("support_classifier_v1_balanced", exclude_run_id=latest_run["run_id"])
+    scorecard = build_scorecard(latest_run, baseline_run)
+    regressions = find_category_regressions(baseline_run, latest_run)
     trend_runs = get_trend_runs(TREND_RUN_LIMIT)
 
     env = Environment(
@@ -185,7 +188,7 @@ def generate_latest_run_report() -> Path:
     template = env.get_template("latest_run_report.html")
     html = template.render(
         run=latest_run,
-        previous_run=previous_run,
+        previous_run=baseline_run,
         scorecard=scorecard,
         regressions=regressions,
         trend_runs=trend_runs,

@@ -128,3 +128,58 @@ def get_last_two_runs() -> list[dict]:
         }
         for row in res.fetchall()
     ]
+
+
+def get_latest_run() -> dict | None:
+    res = con.execute("""
+    SELECT run_id, prompt_version, created_at, overall_category_accuracy, overall_summary_score, total_tokens, avg_latency_ms
+    FROM eval_runs
+    ORDER BY created_at DESC
+    LIMIT 1
+""")
+    row = res.fetchone()
+    if row is None:
+        return None
+
+    return {
+        "run_id": row[0],
+        "prompt_version": row[1],
+        "created_at": row[2],
+        "overall_category_accuracy": row[3],
+        "overall_summary_score": row[4],
+        "total_tokens": row[5],
+        "avg_latency_ms": row[6],
+    }
+
+
+def get_latest_run_for_prompt_version(prompt_version: str, exclude_run_id: str | None = None) -> dict | None:
+    if exclude_run_id:
+        res = con.execute("""
+        SELECT run_id, prompt_version, created_at, overall_category_accuracy, overall_summary_score, total_tokens, avg_latency_ms
+        FROM eval_runs
+        WHERE prompt_version = ? AND run_id != ?
+        ORDER BY created_at DESC
+        LIMIT 1
+    """, (prompt_version, exclude_run_id))
+    else:
+        res = con.execute("""
+        SELECT run_id, prompt_version, created_at, overall_category_accuracy, overall_summary_score, total_tokens, avg_latency_ms
+        FROM eval_runs
+        WHERE prompt_version = ?
+        ORDER BY created_at DESC
+        LIMIT 1
+    """, (prompt_version,))
+
+    row = res.fetchone()
+    if row is None:
+        return None
+
+    return {
+        "run_id": row[0],
+        "prompt_version": row[1],
+        "created_at": row[2],
+        "overall_category_accuracy": row[3],
+        "overall_summary_score": row[4],
+        "total_tokens": row[5],
+        "avg_latency_ms": row[6],
+    }

@@ -4,7 +4,7 @@ import json
 import asyncio
 import time
 from datetime import datetime, timezone
-from db import get_last_two_runs
+from db import get_latest_run, get_latest_run_for_prompt_version, get_last_two_runs
 
 
 def load_golden_dataset(golden_ds_path:str)->list[dict]:
@@ -68,18 +68,30 @@ def run_summary(run_result: list[dict], prompt_path: str, golden_ds_path: str, p
     summary["avg_latency_ms"] = round(sum(r["latency_ms"] for r in run_result if r["status"] == "success") / summary["success_count"], 2) if summary["success_count"] > 0 else None
     return summary
 
-#compares last two run difference in accuracy in reference to threshold
-def check_latest_accuracy_drop(category_threshold: float, summary_threshold: float, tokens_threshold: float, latency_threshold: float) -> list[str]:
-    runs = get_last_two_runs()
+#compares latest run against a configurable baseline prompt version
+def check_latest_accuracy_drop(
+    category_threshold: float,
+    summary_threshold: float,
+    tokens_threshold: float,
+    latency_threshold: float,
+    baseline_prompt_version: str = "support_classifier_v1_balanced",
+) -> list[str]:
+    latest = get_latest_run()
 
-    if len(runs) < 2:
-        print("Not enough runs to compare")
+    if latest is None:
+        print("No runs to compare")
         return []
 
-    latest = runs[0]
-    previous = runs[1]
+    baseline = get_latest_run_for_prompt_version(
+        baseline_prompt_version,
+        exclude_run_id=latest["run_id"],
+    )
 
-    previous_accuracy = {"overall_category_accuracy": previous["overall_category_accuracy"], "overall_summary_score": previous["overall_summary_score"], "total_tokens": previous["total_tokens"], "avg_latency_ms": previous["avg_latency_ms"]}
+    if baseline is None:
+        print(f"No baseline run found for prompt version {baseline_prompt_version}")
+        return []
+
+    previous_accuracy = {"overall_category_accuracy": baseline["overall_category_accuracy"], "overall_summary_score": baseline["overall_summary_score"], "total_tokens": baseline["total_tokens"], "avg_latency_ms": baseline["avg_latency_ms"]}
     latest_accuracy = {"overall_category_accuracy": latest["overall_category_accuracy"], "overall_summary_score": latest["overall_summary_score"], "total_tokens": latest["total_tokens"], "avg_latency_ms": latest["avg_latency_ms"]}
 
     drop = {key: previous_accuracy[key] - latest_accuracy[key] for key in previous_accuracy}

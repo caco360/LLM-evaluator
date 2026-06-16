@@ -14,6 +14,7 @@ CATEGORY_THRESHOLD = 0.03
 SUMMARY_THRESHOLD = 0.03
 TOKENS_THRESHOLD = 0.03
 LATENCY_THRESHOLD = 0.03
+BASELINE_PROMPT_VERSION = "support_classifier_v1_balanced"
 
 
 def build_run_id(prompt_version: str) -> str:
@@ -45,7 +46,13 @@ async def main() -> None:
 
     insert_run(summary)
     insert_case_results(summary["run_id"], case_results)
-    regression_alerts = check_latest_accuracy_drop(CATEGORY_THRESHOLD, SUMMARY_THRESHOLD, TOKENS_THRESHOLD, LATENCY_THRESHOLD)
+    regression_alerts = check_latest_accuracy_drop(
+        CATEGORY_THRESHOLD,
+        SUMMARY_THRESHOLD,
+        TOKENS_THRESHOLD,
+        LATENCY_THRESHOLD,
+        BASELINE_PROMPT_VERSION,
+    )
     if regression_alerts:
         report_path = generate_latest_run_report()
         message = "Regression detected:\n"
